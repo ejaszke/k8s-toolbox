@@ -59,6 +59,12 @@ Published tarball artifact:
 - Artifact name in GitHub Actions UI: `k8s-toolbox-image-tar`.
 - Download it from the specific workflow run page.
 
+Published WSL rootfs artifact:
+- For `push` to `main` and `workflow_dispatch`, workflow also exports
+  `k8s-toolbox-wsl-rootfs-<full-git-sha>.tar.gz`.
+- Artifact name in GitHub Actions UI: `k8s-toolbox-wsl-rootfs`.
+- Use it with `wsl --import` to run toolbox without Docker runtime.
+
 Pull image from registry:
 
 ```bash
@@ -88,7 +94,7 @@ docker build --no-cache \
 docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host k8s-toolbox
 ```
 
-## Mounting under WSL
+## Mounting under WSL (with Docker Desktop)
 
 You do not need Docker Engine installed inside WSL distro.
 Use Docker Desktop on Windows and enable WSL integration for your distro.
@@ -145,14 +151,66 @@ docker run -it --rm `
 
 If your repo is in Linux home (for example `/home/<wsl-user>/...`), keep the same command in WSL and use `$(pwd)` for `/work`.
 
-Without any container runtime (Docker Desktop, Podman, or similar), container image cannot be started.
-
 Recommended check after start:
 
 ```bash
 pwd
 ls -la /work
 ls -la /root/.kube
+```
+
+## WSL portable (without Docker)
+
+Use this flow if you want to run toolbox directly as a WSL distro, without Docker runtime.
+
+### 1. Download artifact
+
+From GitHub Actions run, download artifact:
+- `k8s-toolbox-wsl-rootfs`
+
+### 2. Unpack `.tar.gz` to `.tar`
+
+From WSL or Git Bash:
+
+```bash
+gunzip -c k8s-toolbox-wsl-rootfs-<full-git-sha>.tar.gz > k8s-toolbox-wsl-rootfs-<full-git-sha>.tar
+```
+
+### 3. Import as WSL distro
+
+From Windows PowerShell:
+
+```powershell
+$DistroName = "k8s-toolbox-portable"
+$InstallDir = "C:\WSL\k8s-toolbox-portable"
+New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+wsl --import $DistroName $InstallDir .\k8s-toolbox-wsl-rootfs-<full-git-sha>.tar --version 2
+```
+
+### 4. Start and use toolbox
+
+```powershell
+wsl -d k8s-toolbox-portable
+```
+
+Example start in project path:
+
+```powershell
+wsl -d k8s-toolbox-portable --cd /mnt/c/Users/<host-user>/keys/k8s
+```
+
+Inside distro you use tools directly (`kubectl`, `helm`, `kustomize`) without `docker run`.
+
+### 5. Update or remove
+
+Update to newer build:
+1. `wsl --unregister k8s-toolbox-portable`
+2. import again with new rootfs tar.
+
+Remove distro:
+
+```powershell
+wsl --unregister k8s-toolbox-portable
 ```
 
 ## Where to store cluster keys/config

@@ -77,3 +77,23 @@ jobs:
           name: k8s-toolbox-image-tar
           path: ${{ steps.export_tar.outputs.tar_name }}
           retention-days: 14
+
+      - name: Export WSL rootfs tarball
+        if: github.event_name != 'pull_request'
+        id: export_wsl_rootfs
+        run: |
+          set -euo pipefail
+          IMAGE_REF="${IMAGE_NAME}:sha-${GITHUB_SHA}"
+          ROOTFS_TAR_NAME="k8s-toolbox-wsl-rootfs-${GITHUB_SHA}.tar.gz"
+          CID="$(docker create "${IMAGE_REF}")"
+          docker export "${CID}" | gzip > "${ROOTFS_TAR_NAME}"
+          docker rm "${CID}"
+          echo "rootfs_tar_name=${ROOTFS_TAR_NAME}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload WSL rootfs artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-toolbox-wsl-rootfs
+          path: ${{ steps.export_wsl_rootfs.outputs.rootfs_tar_name }}
+          retention-days: 14
