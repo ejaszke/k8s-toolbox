@@ -1,12 +1,12 @@
-# k8s
+# k8s-toolbox
 
-Container workspace for Kubernetes-related work from Windows/WSL paths.
+k8s-toolbox: container workspace for Kubernetes-related work from Windows/WSL paths.
 
 ## Tools and versions
 
 | Tool | Version used | What it is used for | Project link |
 | --- | --- | --- | --- |
-| Alpine Linux | `latest` (not pinned in `Dockerfile`) | Base image for the `my-k8s` container | https://www.alpinelinux.org/ |
+| Alpine Linux | `latest` (not pinned in `Dockerfile`) | Base image for the `k8s-toolbox` container | https://www.alpinelinux.org/ |
 | Helm | `3.19.0` | Kubernetes package/chart management | https://helm.sh/ |
 | Helm plugin: `helm-diff` | `latest at build time` | Show changes between Helm releases before upgrade | https://github.com/databus23/helm-diff |
 | Helm plugin: `helm-unittest` | `latest at build time` | Unit tests for Helm charts | https://github.com/helm-unittest/helm-unittest |
@@ -32,7 +32,7 @@ Notes:
 ## Build image
 
 ```bash
-docker build -t my-k8s .
+docker build -t k8s-toolbox .
 ```
 
 Optional: override pinned versions during build:
@@ -42,13 +42,13 @@ docker build --no-cache \
   --build-arg KUBECTL_VERSION=1.30.2 \
   --build-arg HELM_VERSION=3.19.0 \
   --build-arg KUSTOMIZE_VERSION=v5.4.2 \
-  -t my-k8s .
+  -t k8s-toolbox .
 ```
 
 ## Run container (sample)
 
 ```bash
-docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host my-k8s
+docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host k8s-toolbox
 ```
 
 ## Where to store cluster keys/config
@@ -76,7 +76,7 @@ Inside the container these are available as:
 is automatically used when you start the container with:
 
 ```bash
-docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host my-k8s
+docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host k8s-toolbox
 ```
 
 ### 2. Use custom kubeconfig file (optional)
