@@ -51,12 +51,25 @@ Image publish behavior:
 Published image:
 - `ghcr.io/ejaszke/k8s-toolbox:latest` (default branch),
 - `ghcr.io/ejaszke/k8s-toolbox:main` (branch tag),
-- `ghcr.io/ejaszke/k8s-toolbox:sha-<shortsha>` (commit tag).
+- `ghcr.io/ejaszke/k8s-toolbox:sha-<full-git-sha>` (commit tag).
+
+Published tarball artifact:
+- For `push` to `main` and `workflow_dispatch`, workflow also exports
+  `k8s-toolbox-<full-git-sha>.tar.gz`.
+- Artifact name in GitHub Actions UI: `k8s-toolbox-image-tar`.
+- Download it from the specific workflow run page.
 
 Pull image from registry:
 
 ```bash
 docker pull ghcr.io/ejaszke/k8s-toolbox:latest
+```
+
+Load image from downloaded tarball:
+
+```bash
+gunzip -c k8s-toolbox-<full-git-sha>.tar.gz | docker load
+docker image ls | grep k8s-toolbox
 ```
 
 Optional: override pinned versions during build:
@@ -76,6 +89,16 @@ docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net 
 ```
 
 ## Mounting under WSL
+
+You do not need Docker Engine installed inside WSL distro.
+Use Docker Desktop on Windows and enable WSL integration for your distro.
+
+Basic check in WSL:
+
+```bash
+docker version
+docker context ls
+```
 
 From WSL terminal, run from project directory (local build image):
 
@@ -99,6 +122,17 @@ docker run -it \
   ghcr.io/ejaszke/k8s-toolbox:latest
 ```
 
+From WSL terminal, run image loaded from Actions tarball:
+
+```bash
+docker run -it \
+  -v /mnt/c/Users/<host-user>:/root \
+  -v "$(pwd)":/work \
+  -w /work \
+  --net host \
+  ghcr.io/ejaszke/k8s-toolbox:sha-<full-git-sha>
+```
+
 From Windows PowerShell (Docker Desktop):
 
 ```powershell
@@ -110,6 +144,8 @@ docker run -it --rm `
 ```
 
 If your repo is in Linux home (for example `/home/<wsl-user>/...`), keep the same command in WSL and use `$(pwd)` for `/work`.
+
+Without any container runtime (Docker Desktop, Podman, or similar), container image cannot be started.
 
 Recommended check after start:
 
