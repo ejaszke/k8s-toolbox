@@ -44,7 +44,20 @@ It runs Docker build on:
 - pull requests (when `Dockerfile` or workflow changes),
 - manual trigger (`workflow_dispatch`).
 
-The workflow validates image build only (no image push to registry).
+Image publish behavior:
+- `pull_request`: build only (no push),
+- `push` to `main` and `workflow_dispatch`: build and push to GHCR.
+
+Published image:
+- `ghcr.io/ejaszke/k8s-toolbox:latest` (default branch),
+- `ghcr.io/ejaszke/k8s-toolbox:main` (branch tag),
+- `ghcr.io/ejaszke/k8s-toolbox:sha-<shortsha>` (commit tag).
+
+Pull image from registry:
+
+```bash
+docker pull ghcr.io/ejaszke/k8s-toolbox:latest
+```
 
 Optional: override pinned versions during build:
 
@@ -64,7 +77,7 @@ docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net 
 
 ## Mounting under WSL
 
-From WSL terminal, run from project directory:
+From WSL terminal, run from project directory (local build image):
 
 ```bash
 docker run -it \
@@ -75,7 +88,28 @@ docker run -it \
   k8s-toolbox
 ```
 
-If your repo is in Linux home (for example `/home/<wsl-user>/...`), keep the same command and use `$(pwd)` for `/work`.
+From WSL terminal, run published image from GHCR:
+
+```bash
+docker run -it \
+  -v /mnt/c/Users/<host-user>:/root \
+  -v "$(pwd)":/work \
+  -w /work \
+  --net host \
+  ghcr.io/ejaszke/k8s-toolbox:latest
+```
+
+From Windows PowerShell (Docker Desktop):
+
+```powershell
+docker run -it --rm `
+  -v C:\Users\<host-user>:/root `
+  -v ${PWD}:/work `
+  -w /work `
+  ghcr.io/ejaszke/k8s-toolbox:latest
+```
+
+If your repo is in Linux home (for example `/home/<wsl-user>/...`), keep the same command in WSL and use `$(pwd)` for `/work`.
 
 Recommended check after start:
 
