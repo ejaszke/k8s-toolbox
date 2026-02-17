@@ -35,6 +35,17 @@ Notes:
 docker build -t k8s-toolbox .
 ```
 
+## GitHub Actions
+
+Repository includes CI workflow: `.github/workflows/build-image.yml`.
+
+It runs Docker build on:
+- push to `main` (when `Dockerfile` or workflow changes),
+- pull requests (when `Dockerfile` or workflow changes),
+- manual trigger (`workflow_dispatch`).
+
+The workflow validates image build only (no image push to registry).
+
 Optional: override pinned versions during build:
 
 ```bash
@@ -49,6 +60,29 @@ docker build --no-cache \
 
 ```bash
 docker run -it -v /mnt/c/Users/<host-user>:/root -v ${PWD}:/work -w /work --net host k8s-toolbox
+```
+
+## Mounting under WSL
+
+From WSL terminal, run from project directory:
+
+```bash
+docker run -it \
+  -v /mnt/c/Users/<host-user>:/root \
+  -v "$(pwd)":/work \
+  -w /work \
+  --net host \
+  k8s-toolbox
+```
+
+If your repo is in Linux home (for example `/home/<wsl-user>/...`), keep the same command and use `$(pwd)` for `/work`.
+
+Recommended check after start:
+
+```bash
+pwd
+ls -la /work
+ls -la /root/.kube
 ```
 
 ## Where to store cluster keys/config
